@@ -1,0 +1,250 @@
+import tkinter
+import tkinter.messagebox
+import customtkinter
+import time
+import pandas as pd
+from tkinter import filedialog
+import smtplib
+from email.mime.text import MIMEText
+from validate_email import validate_email
+import webbrowser
+
+customtkinter.set_appearance_mode("Light")  # Modes: "System" (standard), "Dark", "Light"
+customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
+
+
+class App(customtkinter.CTk):
+    def __init__(self):
+        super().__init__()
+
+        # configure window
+        self.title("Matching Application")
+        self.geometry(f"{1100}x{580}")
+
+        # configure grid layout (4x4)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure((2, 3), weight=0)
+        self.grid_rowconfigure((0, 1, 2), weight=1)
+
+        # create sidebar frame with widgets
+        self.sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
+        self.sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
+        self.sidebar_frame.grid_rowconfigure(4, weight=1)
+        self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="Menu", font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
+        self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, text="Upload Organizations rating",width=30, command=lambda: self.sidebar_button_event('companies'))
+        self.sidebar_button_1.grid(row=1, column=0, padx=20, pady=10, sticky="ew")
+
+        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, text="Upload student rating",width=30, command=lambda: self.sidebar_button_event('students'))
+        self.sidebar_button_2.grid(row=2, column=0, padx=20, pady=10, sticky="ew")
+
+        # Set a common size for the buttons using the uniform option
+        self.sidebar_frame.grid_columnconfigure(0, uniform="button_column")
+        self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
+        self.appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
+        self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark"],
+                                                                       command=self.change_appearance_mode_event)
+        self.appearance_mode_optionemenu.grid(row=6, column=0, padx=20, pady=(10, 10))
+        self.scaling_label = customtkinter.CTkLabel(self.sidebar_frame, text="UI Scaling:", anchor="w")
+        self.scaling_label.grid(row=7, column=0, padx=20, pady=(10, 0))
+        self.scaling_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["80%", "90%", "100%", "110%", "120%"],
+                                                               command=self.change_scaling_event)
+        self.scaling_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 20))
+
+        # create main entry and button
+        self.entry = customtkinter.CTkEntry(self, placeholder_text="Enter your email")
+        self.entry.grid(row=3, column=1, columnspan=2, padx=(20, 0), pady=(20, 20), sticky="nsew")
+
+        self.main_button_1 = customtkinter.CTkButton(master=self, text="Send Result by Email", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"), command=self.open_default_email_app)
+        self.main_button_1.grid(row=3, column=3, padx=(20, 20), pady=(20, 20), sticky="nsew")
+
+
+
+        # create textbox
+        self.textbox = customtkinter.CTkTextbox(self, width=250)
+        self.textbox.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
+
+
+        # create slider and progressbar frame
+        self.slider_progressbar_frame = customtkinter.CTkFrame(self, fg_color="transparent")
+        self.slider_progressbar_frame.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.slider_progressbar_frame.grid_columnconfigure(0, weight=1)
+        self.slider_progressbar_frame.grid_rowconfigure(4, weight=1)
+
+        self.calc_button = customtkinter.CTkButton(self.slider_progressbar_frame, text="Calculate Matching", width=30, command=self.start_progressbar)
+        self.calc_button.grid(row=0, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+
+        self.progressbar_1 = customtkinter.CTkProgressBar(self.slider_progressbar_frame)
+        self.progressbar_1.grid(row=1, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+
+        self.appearance_mode_optionemenu.set("Light")
+        self.scaling_optionemenu.set("100%")
+
+        self.textbox.insert("0.0", "Background\n\n" + "Here we are going to explain what to do\n\n")
+
+    def start_progressbar(self):
+        self.progressbar_1.configure(mode="indeterminate")
+        self.progressbar_1.start()
+        self.calculate_matching()  # Start the matching process
+        self.after(5000, self.stop_progressbar)  # After 5000 milliseconds (5 seconds), stop the progress bar
+
+    def stop_progressbar(self):
+        self.progressbar_1.stop()
+        self.progressbar_1.configure(mode="determinate")  # Reset the mode to determinate
+
+    def open_input_dialog_event(self):
+        dialog = customtkinter.CTkInputDialog(text="Type in a number:", title="CTkInputDialog")
+        print("CTkInputDialog:", dialog.get_input())
+
+    def change_appearance_mode_event(self, new_appearance_mode: str):
+        customtkinter.set_appearance_mode(new_appearance_mode)
+
+    def change_scaling_event(self, new_scaling: str):
+        new_scaling_float = int(new_scaling.replace("%", "")) / 100
+        customtkinter.set_widget_scaling(new_scaling_float)
+
+    def sidebar_button_event(self, type):
+        if type == 'students':
+            self.load_csv('students')
+        elif type == 'companies':
+            self.load_csv('companies')
+
+    def load_csv(self, type):
+        self.textbox.insert("end", f"Attempting to load {type} CSV...\n")
+        file_path = filedialog.askopenfilename(filetypes=[('CSV Files', '*.csv')])
+        if not file_path:
+            self.textbox.insert("end", f"Loading {type} CSV aborted.\n")
+            return
+
+        try:
+            if type == 'students':
+                self.students_df = pd.read_csv(file_path)
+                self.textbox.insert("end", "Student preferences CSV successfully loaded.\n")
+            elif type == 'companies':
+                self.companies_df = pd.read_csv(file_path)
+                self.textbox.insert("end", "Company preferences CSV successfully loaded.\n")
+        except Exception as e:
+            self.textbox.insert("end", f"Error loading {type} CSV: {str(e)}\n")
+
+    def calculate_matching(self):
+        self.textbox.delete('1.0', 'end')  # Clear the textbox before inserting results
+        self.textbox.insert("end", "Starting matching calculation...\n")
+
+        try:
+            student_prefs_dict = {
+                row["Full name"]: [col.split('[')[1].split(']')[0] for col in row[1:-1].sort_values().index]
+                for _, row in self.students_df.iterrows()}
+            self.textbox.insert("end", "Processed student preferences...\n")
+
+            company_prefs_dict = {
+                row["Full name"]: [col.split('[')[1].split(']')[0] for col in row[1:-1].sort_values().index]
+                for _, row in self.companies_df.iterrows()}
+            self.textbox.insert("end", "Processed company preferences...\n")
+
+            self.textbox.insert("end", "Running Gale-Shapley algorithm...\n")
+            matchings = self.gale_shapley(student_prefs_dict, company_prefs_dict)
+
+            self.textbox.insert("end", "Matchings computed. Displaying results...\n")
+
+            # Calculating success rates after matching
+            success_rates = self.calculate_success_rate(matchings, student_prefs_dict, company_prefs_dict)
+            self.textbox.insert("end", "\nSuccess Rates:\n")
+            for company, data in success_rates.items():
+                self.textbox.insert("end",f"{company} matched with {data['student']} has a success rate of {data['success_rate']*100:.2f}%\n")
+
+            # for company, student in matchings.items():
+            #     self.textbox.insert("end", f"{company} matched with {student}\n")
+
+        except Exception as e:
+            self.textbox.insert("end", f"Error: {str(e)}")
+
+    def gale_shapley(self, students_pref, companies_pref):
+        """Gale-Shapley algorithm for stable matching."""
+        # Initialize
+        n = len(students_pref)
+        free_students = list(students_pref.keys())
+        proposals = {student: [] for student in students_pref}
+        matched = {}
+
+        while free_students:
+            student = free_students.pop()
+            student_prefs = students_pref[student]
+
+            for company in student_prefs:
+                # Check if student has already proposed to this company
+                if company not in proposals[student]:
+                    proposals[student].append(company)
+
+                    # If company is free, accept the proposal
+                    if company not in matched:
+                        matched[company] = student
+                        break
+
+                    # If company is already matched, check if they prefer the new student
+                    else:
+                        current_match = matched[company]
+                        if companies_pref[company].index(student) < companies_pref[company].index(current_match):
+                            matched[company] = student
+                            free_students.append(current_match)
+                            break
+
+        return matched
+
+    def calculate_success_rate(self, matchings, student_prefs, company_prefs):
+        success_rates = {}
+        for company, student in matchings.items():
+            # Fetch the ranks from the preference lists
+            student_rank_for_company = student_prefs[student].index(company) + 1
+            company_rank_for_student = company_prefs[company].index(student) + 1
+            # Average the ranks
+            average_rank = (student_rank_for_company + company_rank_for_student) / 2
+            # Derive success rate as the inverse of the average rank
+            success_rate = 1 / average_rank
+            success_rates[company] = {
+                "student": student,
+                "success_rate": success_rate
+            }
+        return success_rates
+
+    # def send_email(self, recipient, subject, body):
+    #     if not validate_email(recipient):
+    #         self.textbox.insert("end", f"'{recipient}' is not a valid email address.\n")
+    #         return
+    #
+    #     # Email setup
+    #     sender_email = "your_email@gmail.com"
+    #     sender_password = "your_password"
+    #
+    #     msg = MIMEText(body)
+    #     msg['From'] = sender_email
+    #     msg['To'] = recipient
+    #     msg['Subject'] = subject
+    #
+    #     # Send the email
+    #     try:
+    #         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+    #             server.login(sender_email, sender_password)
+    #             server.sendmail(sender_email, recipient, msg.as_string())
+    #         self.textbox.insert("end", "Email sent successfully.\n")
+    #     except Exception as e:
+    #         self.textbox.insert("end", f"Error sending email: {str(e)}\n")
+    #
+    # def send_results_by_email(self):
+    #     recipient = self.entry.get()
+    #     subject = "Matching Results"
+    #     body = self.textbox.get("1.0", "end-1c")  # Get the contents of the textbox
+    #     self.send_email(recipient, subject, body)
+    def open_default_email_app(self):
+        recipient = self.entry.get()
+        subject = "Matching Results"
+        body = self.textbox.get("1.0", "end-1c")  # Get the contents of the textbox
+
+        # Construct the mailto URL
+        mailto_url = f"mailto:{recipient}?subject={subject}&body={body}"
+
+        # Open the default email application
+        webbrowser.open(mailto_url)
+
+if __name__ == "__main__":
+    app = App()
+    app.mainloop()
