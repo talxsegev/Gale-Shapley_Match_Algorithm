@@ -9,6 +9,7 @@ from email.mime.text import MIMEText
 from validate_email import validate_email
 import webbrowser
 
+
 customtkinter.set_appearance_mode("Light")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
@@ -32,10 +33,15 @@ class App(customtkinter.CTk):
         self.geometry(f"{1100}x{580}")
 
         #icon
-        # self.logo_image = tkinter.PhotoImage(file='CollegeLogo.png')
-        # self.iconbitmap(self.logo_image)
-        # logo_label = tkinter.Label(self, image=self.logo_image)
-        # logo_label.grid(row=0, column=2, sticky='ne')  # 'ne' means top-right (north-east)
+        self.iconbitmap('CollegeLogo.ico')
+
+        self.logo_image = tkinter.PhotoImage(file='CollegeLogo.png')
+        self.logo_label = tkinter.Label(self, image=self.logo_image, bg="white", compound="right" ,fg="white")
+        self.logo_label.grid(row=0, column=2, sticky='ne')  # 'ne' means top-right (north-east)
+        # Initial resize
+        self.resize_logo()
+        # Bind the window resize event
+        self.bind('<Configure>', self.resize_logo)
 
         # configure grid layout (4x4)
         self.grid_columnconfigure(1, weight=1)
@@ -278,6 +284,13 @@ class App(customtkinter.CTk):
 
         # Open the default email application
         webbrowser.open(mailto_url)
+
+    def resize_logo(self, event=None):
+        # Adjust the logo label's width and height properties based on window size
+        new_width = self.winfo_width() // 10  # For example, 10% of window width
+        new_height = self.winfo_height() // 10 # For example, 10% of window height
+
+        self.logo_label.configure(width=new_width, height=new_height)
 
 if __name__ == "__main__":
     app = App()
