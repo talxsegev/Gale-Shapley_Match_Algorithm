@@ -186,7 +186,7 @@ class App(customtkinter.CTk):
             self.result = success_rates
             self.textbox.insert("end", "\nSuccess Rates:\n")
             for company, data in success_rates.items():
-                self.textbox.insert("end",f"{company} matched with {data['student']} has a success rate of {data['success_rate']*100:.2f}%\n")
+                self.textbox.insert("end",f"{company} matched with {data['student']} has a success rate of {data['success_rate']:.2f}%\n")
 
             # Display unmatched students and companies
             if unmatched_students:
@@ -250,7 +250,7 @@ class App(customtkinter.CTk):
             # Average the ranks
             average_rank = (student_rank_for_company + company_rank_for_student) / 2
             # Derive success rate as the inverse of the average rank
-            success_rate = 1 / average_rank
+            success_rate =round((1 / average_rank)*100, 2)
             success_rates[company] = {
                 "student": student,
                 "success_rate": success_rate
@@ -296,7 +296,7 @@ class App(customtkinter.CTk):
         for org_name, data in self.result.items():
             text_content += f"Organization: {org_name}%0D%0A"
             text_content += f"Matched Student: {data['student']}%0D%0A"
-            text_content += f"Success Rate: {data['success_rate']}%0D%0A"
+            text_content += f"Success Rate: {data['success_rate']}%%0D%0A"
             text_content += "-" * 40 + "%0D%0A"  # Separator line
 
         if self.unmatched_students:
