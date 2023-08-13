@@ -9,6 +9,12 @@ from email.mime.text import MIMEText
 from validate_email import validate_email
 import webbrowser
 import urllib.parse
+from PIL import Image, ImageTk
+from threading import Thread
+import cv2
+
+
+
 
 
 customtkinter.set_appearance_mode("Light")  # Modes: "System" (standard), "Dark", "Light"
@@ -115,6 +121,12 @@ class App(customtkinter.CTk):
         self.result = {}
         self.unmatched_students = []
         self.unmatched_companies = []
+
+        self.geometry("400x400")
+        self.title("Main App")
+
+        instruction_button = tk.Button(self, text="Instructions", command=self.open_video_window)
+        instruction_button.pack(pady=20)
     def start_progressbar(self):
         self.progressbar_1.configure(mode="indeterminate")
         self.progressbar_1.start()
@@ -337,7 +349,28 @@ class App(customtkinter.CTk):
 
         self.logo_label.configure(width=new_width, height=new_height)
 
+    def open_video_window(self):
+        video_win = VideoWindow('path_to_your_video_file.mp4')
+        video_win.title("Instruction Video")
+        video_win.mainloop()
 
+class VideoWindow(tk.Toplevel):
+    def __init__(self, video_path):
+        super().__init__()
+        self.video_path = video_path
+        self.cap = cv2.VideoCapture(self.video_path)
+        self.canvas = tk.Canvas(self, width=self.cap.get(cv2.CAP_PROP_FRAME_WIDTH),
+                                height=self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.canvas.pack()
+        self.update_video()
+
+    def update_video(self):
+        ret, frame = self.cap.read()
+        if ret:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            photo = ImageTk.PhotoImage(image=Image.fromarray(frame))
+            self.canvas.create_image(0, 0, image=photo, anchor=tk.NW)
+            self.after(30, self.update_video)
 
 if __name__ == "__main__":
     app = App()
