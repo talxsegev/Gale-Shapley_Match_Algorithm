@@ -84,7 +84,7 @@ class App(customtkinter.CTk):
         self.entry = customtkinter.CTkEntry(self, placeholder_text="Enter your email")
         self.entry.grid(row=3, column=1, columnspan=2, padx=(20, 0), pady=(20, 20), sticky="nsew")
 
-        self.main_button_1 = customtkinter.CTkButton(master=self, text="Send Result by Email", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"), command=self.open_default_email_app)
+        self.main_button_1 = customtkinter.CTkButton(master=self, text="Send Result by Email", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"), command=self.send_results_by_email)
         self.main_button_1.grid(row=3, column=3, padx=(20, 20), pady=(20, 20), sticky="nsew")
 
 
@@ -125,8 +125,9 @@ class App(customtkinter.CTk):
         self.geometry("400x400")
         self.title("Main App")
 
-        instruction_button = tk.Button(self, text="Instructions", command=self.open_video_window)
-        instruction_button.pack(pady=20)
+        instruction_button = customtkinter.CTkButton(self, text="Instructions", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"),command=self.open_video_window)
+        instruction_button.grid(row=2, column=1, pady=20)
+
     def start_progressbar(self):
         self.progressbar_1.configure(mode="indeterminate")
         self.progressbar_1.start()
@@ -270,34 +271,74 @@ class App(customtkinter.CTk):
             }
         return success_rates
 
-    # def send_email(self, recipient, subject, body):
-    #     if not validate_email(recipient):
-    #         self.textbox.insert("end", f"'{recipient}' is not a valid email address.\n")
-    #         return
-    #
-    #     # Email setup
-    #     sender_email = "your_email@gmail.com"
-    #     sender_password = "your_password"
-    #
-    #     msg = MIMEText(body)
-    #     msg['From'] = sender_email
-    #     msg['To'] = recipient
-    #     msg['Subject'] = subject
-    #
-    #     # Send the email
-    #     try:
-    #         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-    #             server.login(sender_email, sender_password)
-    #             server.sendmail(sender_email, recipient, msg.as_string())
-    #         self.textbox.insert("end", "Email sent successfully.\n")
-    #     except Exception as e:
-    #         self.textbox.insert("end", f"Error sending email: {str(e)}\n")
-    #
-    # def send_results_by_email(self):
-    #     recipient = self.entry.get()
-    #     subject = "Matching Results"
-    #     body = self.textbox.get("1.0", "end-1c")  # Get the contents of the textbox
-    #     self.send_email(recipient, subject, body)
+    def send_results_by_email(self):
+        recipient = self.entry.get()
+        subject = "Matching Results"
+
+        # Construct the text representation from self.result
+        text_content = ""
+        for org_name, data in self.result.items():
+            text_content += f"Organization: {org_name}\n"
+            text_content += f"Matched Student: {data['student']}\n"
+            text_content += f"Success Rate: {data['success_rate']}%\n"
+            text_content += "-" * 40 + "\n"  # Separator line
+
+        if self.unmatched_students:
+            text_content += str("Unmatched Students:\n" + str(self.unmatched_students))
+        if self.unmatched_companies:
+            text_content += str("Unmatched Companies:\n" + str(self.unmatched_companies))
+
+        if not validate_email(recipient):
+            self.textbox.insert("end", f"\n'{recipient}' is not a valid email address.\n")
+            return
+
+        body = text_content
+
+        # Email setup
+        sender_email = "matchingappgaleshapley@gmail.com"
+        sender_password = "gkbpsrptpvdgyecg"
+
+        msg = MIMEText(body)
+        msg['From'] = sender_email
+        msg['To'] = recipient
+        msg['Subject'] = subject
+
+        try:
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+                server.login(sender_email, sender_password)
+                server.sendmail(sender_email, recipient, msg.as_string())
+            self.textbox.insert("end", "Email sent successfully.\n")
+        except Exception as e:
+            if "not a valid email address" in str(e):
+                self.open_default_email_app()
+                self.textbox.insert("end", "Invalid email address. Opened default email app.\n")
+            else:
+                self.textbox.insert("end", f"Error sending email: {str(e)}\n")
+
+    def open_default_email_app(self):
+        recipient = self.entry.get()
+        subject = "Matching Results"
+
+        # Construct the text representation from self.result
+        text_content = ""
+        for org_name, data in self.result.items():
+            text_content += f"Organization: {org_name}%0D%0A"
+            text_content += f"Matched Student: {data['student']}%0D%0A"
+            text_content += f"Success Rate: {data['success_rate']}%%0D%0A"
+            text_content += "-" * 40 + "%0D%0A"  # Separator line
+
+        if self.unmatched_students:
+            text_content += str("Unmatched Students:%0D%0A" + str(self.unmatched_students))
+        if self.unmatched_companies:
+            text_content += str("Unmatched Companies:%0D%0A" + str(self.unmatched_companies))
+
+        body = text_content
+
+        # Construct the mailto URL
+        mailto_url = f"mailto:{recipient}?subject={subject}&body={body}"
+
+        # Open the default email application
+        webbrowser.open(mailto_url)
     def open_default_email_app(self):
         recipient = self.entry.get()
         subject = "Matching Results"
@@ -350,16 +391,16 @@ class App(customtkinter.CTk):
         self.logo_label.configure(width=new_width, height=new_height)
 
     def open_video_window(self):
-        video_win = VideoWindow('path_to_your_video_file.mp4')
+        video_win = VideoWindow('app (0).mp4')
         video_win.title("Instruction Video")
         video_win.mainloop()
 
-class VideoWindow(tk.Toplevel):
+class VideoWindow(tkinter.Toplevel):
     def __init__(self, video_path):
         super().__init__()
         self.video_path = video_path
         self.cap = cv2.VideoCapture(self.video_path)
-        self.canvas = tk.Canvas(self, width=self.cap.get(cv2.CAP_PROP_FRAME_WIDTH),
+        self.canvas = tkinter.Canvas(self, width=self.cap.get(cv2.CAP_PROP_FRAME_WIDTH),
                                 height=self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.canvas.pack()
         self.update_video()
@@ -369,7 +410,7 @@ class VideoWindow(tk.Toplevel):
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             photo = ImageTk.PhotoImage(image=Image.fromarray(frame))
-            self.canvas.create_image(0, 0, image=photo, anchor=tk.NW)
+            self.canvas.create_image(0, 0, image=photo, anchor=tkinter.NW)
             self.after(30, self.update_video)
 
 if __name__ == "__main__":
