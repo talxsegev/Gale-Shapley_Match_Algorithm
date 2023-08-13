@@ -8,6 +8,8 @@ import smtplib
 from email.mime.text import MIMEText
 from validate_email import validate_email
 import webbrowser
+import urllib.parse
+
 
 customtkinter.set_appearance_mode("Light")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -110,6 +112,9 @@ class App(customtkinter.CTk):
                             "Click the \"Upload Student Rating\" button and load the CSV file of the students' scores from Google Forms.\n\n" +
                             "3.Calculate Matching:\n"
                             "Click the \"Calculate Matching\" button and you will see below the matching output of the stable match.\n\n")
+        self.result = {}
+        self.unmatched_students = []
+        self.unmatched_companies = []
     def start_progressbar(self):
         self.progressbar_1.configure(mode="indeterminate")
         self.progressbar_1.start()
@@ -171,23 +176,29 @@ class App(customtkinter.CTk):
 
             self.textbox.insert("end", "Running Gale-Shapley algorithm...\n")
             matchings = self.gale_shapley(student_prefs_dict, company_prefs_dict)
-            unmatched_students, unmatched_companies = identify_unmatched(matchings, student_prefs_dict,company_prefs_dict)
+            unmatched_students, unmatched_companies = self.identify_unmatched(matchings, student_prefs_dict,company_prefs_dict)
+            self.unmatched_students = unmatched_students
+            self.unmatched_companies = unmatched_companies
             self.textbox.insert("end", "Matchings computed. Displaying results...\n")
 
             # Calculating success rates after matching
             success_rates = self.calculate_success_rate(matchings, student_prefs_dict, company_prefs_dict)
+            self.result = success_rates
             self.textbox.insert("end", "\nSuccess Rates:\n")
             for company, data in success_rates.items():
                 self.textbox.insert("end",f"{company} matched with {data['student']} has a success rate of {data['success_rate']*100:.2f}%\n")
 
             # Display unmatched students and companies
-            self.textbox.insert("end", "\nUnmatched Students:\n")
-            for student in unmatched_students:
-                self.textbox.insert("end", f"{student}\n")
+            if unmatched_students:
+                self.textbox.insert("end", "\nUnmatched Students:\n")
+                for student in unmatched_students:
+                    self.textbox.insert("end", f"{student}\n")
 
-            self.textbox.insert("end", "\nUnmatched Companies:\n")
-            for company in unmatched_companies:
-                self.textbox.insert("end", f"{company}\n")
+            if unmatched_companies:
+                self.textbox.insert("end", "\nUnmatched Companies:\n")
+                for company in unmatched_companies:
+                    self.textbox.insert("end", f"{company}\n")
+
 
         except Exception as e:
             self.textbox.insert("end", f"Error: {str(e)}")
@@ -277,7 +288,28 @@ class App(customtkinter.CTk):
     def open_default_email_app(self):
         recipient = self.entry.get()
         subject = "Matching Results"
-        body = self.textbox.get("1.0", "end-1c")  # Get the contents of the textbox
+
+        # body = self.textbox.get("1.0", "end-1c")  # Get the contents of the textbox
+
+        # Construct the text representation from self.result
+        text_content = ""
+        for org_name, data in self.result.items():
+            text_content += f"Organization: {org_name}%0D%0A"
+            text_content += f"Matched Student: {data['student']}%0D%0A"
+            text_content += f"Success Rate: {data['success_rate']}%0D%0A"
+            text_content += "-" * 40 + "%0D%0A"  # Separator line
+
+        if self.unmatched_students:
+            text_content += str("Unmatched Students:%0D%0A" + str(self.unmatched_students))
+        if self.unmatched_companies:
+            text_content += str("Unmatched Companies:%0D%0A" + str(self.unmatched_companies))
+
+        if not validate_email(recipient):
+            self.textbox.insert("end", f"\n'{recipient}' is not a valid email address.\n")
+            return
+
+
+        body = text_content
 
         # Construct the mailto URL
         mailto_url = f"mailto:{recipient}?subject={subject}&body={body}"
@@ -302,6 +334,8 @@ class App(customtkinter.CTk):
         new_height = self.winfo_height() // 10 # For example, 10% of window height
 
         self.logo_label.configure(width=new_width, height=new_height)
+
+
 
 if __name__ == "__main__":
     app = App()
