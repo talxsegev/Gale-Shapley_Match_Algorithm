@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pandas as pd
 
 def gale_shapley(students_pref, companies_pref):
@@ -32,9 +34,10 @@ def gale_shapley(students_pref, companies_pref):
 
     return matched
 
+
 # Load and review the provided CSV files
-students_df = pd.read_csv("Students matching.csv")
-companies_df = pd.read_csv("company matching.csv")
+students_df = pd.read_csv(Path(__file__).parent / "Students matching.csv")
+companies_df = pd.read_csv(Path(__file__).parent / "company matching.csv")
 
 student_prefs_dict = {
     row["Full name"]: [col.split('[')[1].split(']')[0] for col in row[1:-1].sort_values().index]

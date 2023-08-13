@@ -9,7 +9,6 @@ from email.mime.text import MIMEText
 from validate_email import validate_email
 import webbrowser
 
-
 customtkinter.set_appearance_mode("Light")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
@@ -172,7 +171,7 @@ class App(customtkinter.CTk):
 
             self.textbox.insert("end", "Running Gale-Shapley algorithm...\n")
             matchings = self.gale_shapley(student_prefs_dict, company_prefs_dict)
-
+            unmatched_students, unmatched_companies = identify_unmatched(matchings, student_prefs_dict,company_prefs_dict)
             self.textbox.insert("end", "Matchings computed. Displaying results...\n")
 
             # Calculating success rates after matching
@@ -181,8 +180,14 @@ class App(customtkinter.CTk):
             for company, data in success_rates.items():
                 self.textbox.insert("end",f"{company} matched with {data['student']} has a success rate of {data['success_rate']*100:.2f}%\n")
 
-            # for company, student in matchings.items():
-            #     self.textbox.insert("end", f"{company} matched with {student}\n")
+            # Display unmatched students and companies
+            self.textbox.insert("end", "\nUnmatched Students:\n")
+            for student in unmatched_students:
+                self.textbox.insert("end", f"{student}\n")
+
+            self.textbox.insert("end", "\nUnmatched Companies:\n")
+            for company in unmatched_companies:
+                self.textbox.insert("end", f"{company}\n")
 
         except Exception as e:
             self.textbox.insert("end", f"Error: {str(e)}")
@@ -219,6 +224,12 @@ class App(customtkinter.CTk):
 
         return matched
 
+    def identify_unmatched(self, matched_pairs, students_pref, companies_pref):
+        """Identify unmatched students and companies."""
+        unmatched_students = [student for student in students_pref if student not in matched_pairs.values()]
+        unmatched_companies = [company for company in companies_pref if company not in matched_pairs]
+
+        return unmatched_students, unmatched_companies
     def calculate_success_rate(self, matchings, student_prefs, company_prefs):
         success_rates = {}
         for company, student in matchings.items():
