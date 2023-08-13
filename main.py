@@ -147,6 +147,7 @@ class App(customtkinter.CTk):
         file_path = filedialog.askopenfilename(filetypes=[('CSV Files', '*.csv')])
         if not file_path:
             self.textbox.insert("end", f"Loading {type} CSV aborted.\n\n")
+            self.textbox.see("end")
             return
 
         try:
@@ -202,7 +203,7 @@ class App(customtkinter.CTk):
 
         except Exception as e:
             self.textbox.insert("end", f"Error: {str(e)}")
-
+        self.textbox.see("end")
     def gale_shapley(self, students_pref, companies_pref):
         """Gale-Shapley algorithm for stable matching."""
         # Initialize
@@ -306,6 +307,7 @@ class App(customtkinter.CTk):
 
         if not validate_email(recipient):
             self.textbox.insert("end", f"\n'{recipient}' is not a valid email address.\n")
+            self.textbox.see("end")
             return
 
 
