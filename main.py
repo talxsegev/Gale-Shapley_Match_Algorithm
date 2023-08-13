@@ -16,10 +16,26 @@ customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "gre
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
+        # configure copyright
+        # Create the Copyright label
+        copyright_label = customtkinter.CTkLabel(self,text="Copyright © Tal Segev, Ofek Rabotnicoff, Barel Cohen, Rachel Kopel, Tal Shemesh")
 
+        # Create the Contact Us link
+        contact_us_label = customtkinter.CTkLabel(self, text="Contact Us", text_color=("blue", "blue"), cursor="hand2")
+        contact_us_label.bind("<Button-1>", lambda event: self.open_contact_us_email())
+
+        # Place the Copyright label and the Contact Us link in the grid
+        copyright_label.grid(row=4, column=0, columnspan=4, pady=(10, 0))
+        contact_us_label.grid(row=5, column=0, columnspan=4,pady = (0,10))
         # configure window
         self.title("Matching Application")
         self.geometry(f"{1100}x{580}")
+
+        #icon
+        # self.logo_image = tkinter.PhotoImage(file='CollegeLogo.png')
+        # self.iconbitmap(self.logo_image)
+        # logo_label = tkinter.Label(self, image=self.logo_image)
+        # logo_label.grid(row=0, column=2, sticky='ne')  # 'ne' means top-right (north-east)
 
         # configure grid layout (4x4)
         self.grid_columnconfigure(1, weight=1)
@@ -80,8 +96,15 @@ class App(customtkinter.CTk):
         self.appearance_mode_optionemenu.set("Light")
         self.scaling_optionemenu.set("100%")
 
-        self.textbox.insert("0.0", "Background\n\n" + "Here we are going to explain what to do\n\n")
-
+        self.textbox.insert("0.0",
+                            "Background\n\n" + "The Gale-Shapley algorithm is a stable matching algorithm that ensures each participant is optimally matched based on their preferences, with no incentive to change. It operates by allowing participants to propose and accept or reject proposals, ultimately resulting in stable pairs.\n\n" +
+                            "Instructions:\n\n" +
+                            "1.Upload Organizations Rating:\n"
+                            "Click the \"Upload Organizations Rating\" button and load the CSV file of the scores from the organizations from Google Forms.\n\n" +
+                            "2.Upload Student Rating:\n"
+                            "Click the \"Upload Student Rating\" button and load the CSV file of the students' scores from Google Forms.\n\n" +
+                            "3.Calculate Matching:\n"
+                            "Click the \"Calculate Matching\" button and you will see below the matching output of the stable match.\n\n")
     def start_progressbar(self):
         self.progressbar_1.configure(mode="indeterminate")
         self.progressbar_1.start()
@@ -113,16 +136,16 @@ class App(customtkinter.CTk):
         self.textbox.insert("end", f"Attempting to load {type} CSV...\n")
         file_path = filedialog.askopenfilename(filetypes=[('CSV Files', '*.csv')])
         if not file_path:
-            self.textbox.insert("end", f"Loading {type} CSV aborted.\n")
+            self.textbox.insert("end", f"Loading {type} CSV aborted.\n\n")
             return
 
         try:
             if type == 'students':
                 self.students_df = pd.read_csv(file_path)
-                self.textbox.insert("end", "Student preferences CSV successfully loaded.\n")
+                self.textbox.insert("end", "Student preferences CSV successfully loaded.\n\n")
             elif type == 'companies':
                 self.companies_df = pd.read_csv(file_path)
-                self.textbox.insert("end", "Company preferences CSV successfully loaded.\n")
+                self.textbox.insert("end", "Company preferences CSV successfully loaded.\n\n")
         except Exception as e:
             self.textbox.insert("end", f"Error loading {type} CSV: {str(e)}\n")
 
@@ -238,6 +261,17 @@ class App(customtkinter.CTk):
         recipient = self.entry.get()
         subject = "Matching Results"
         body = self.textbox.get("1.0", "end-1c")  # Get the contents of the textbox
+
+        # Construct the mailto URL
+        mailto_url = f"mailto:{recipient}?subject={subject}&body={body}"
+
+        # Open the default email application
+        webbrowser.open(mailto_url)
+
+    def open_contact_us_email(self):
+        recipient = "Matching@gmail.com"
+        subject = "Contact Us"
+        body = "Please enter your message here."
 
         # Construct the mailto URL
         mailto_url = f"mailto:{recipient}?subject={subject}&body={body}"
