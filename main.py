@@ -394,7 +394,7 @@ class VideoWindow(tkinter.Toplevel):
                                  sliderrelief='flat', bg='#c4c4c4', troughcolor='#d9d9d9', bd=0, highlightthickness=0)
         self.seek_bar.grid(row=2, column=0, columnspan=4, sticky='ew', padx=10)
         self.seek_bar.bind("<B1-Motion>", self.seek_video)
-
+        self.seek_bar.bind("<ButtonRelease-1>", lambda x: setattr(self, "seek_free", True))
         # Elegant Control buttons with symbols
         self.btn_play = tkinter.Button(self, text="▶", command=self.play_video, relief='flat', bg='#e6e6e6', padx=20, pady=5)
         self.btn_play.grid(row=3, column=0, padx=10, pady=10)
@@ -407,6 +407,7 @@ class VideoWindow(tkinter.Toplevel):
         self.btn_stop.grid(row=3, column=2, padx=10, pady=10)
 
         self.playing = True
+        self.seek_free = True
 
         # Create an update method to refresh video frames
         self.update()
@@ -427,10 +428,12 @@ class VideoWindow(tkinter.Toplevel):
         self.canvas.delete("all")
 
     def seek_video(self, event):
+        self.seek_free = False
         frame_pos = self.seek_bar.get()
         self.vid.set(cv2.CAP_PROP_POS_FRAMES, frame_pos)
         self.update_elapsed_time()
         self.update_frame()
+
 
     def update_elapsed_time(self):
         current_frame = self.vid.get(cv2.CAP_PROP_POS_FRAMES)
@@ -449,9 +452,13 @@ class VideoWindow(tkinter.Toplevel):
             if ret:
                 self.photo = ImageTk.PhotoImage(image=Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
                 self.canvas.create_image(0, 0, image=self.photo, anchor=tkinter.NW)
-                self.seek_bar.set(self.vid.get(cv2.CAP_PROP_POS_FRAMES))
+                self.seek(self.vid.get(cv2.CAP_PROP_POS_FRAMES))
                 self.update_elapsed_time()
-                self.after(10, self.update)
+                self.after(1, self.update)
+
+    def seek(self, frame_pos):
+        if self.seek_free:
+            self.seek_bar.set(frame_pos)
 
     def on_closing(self):
         self.vid.release()
