@@ -391,27 +391,99 @@ class App(customtkinter.CTk):
         self.logo_label.configure(width=new_width, height=new_height)
 
     def open_video_window(self):
-        video_win = VideoWindow('app (0).mp4')
+        video_win = VideoWindow('vid.mp4')
         video_win.title("Instruction Video")
-        video_win.mainloop()
+
 
 class VideoWindow(tkinter.Toplevel):
     def __init__(self, video_path):
         super().__init__()
-        self.video_path = video_path
-        self.cap = cv2.VideoCapture(self.video_path)
-        self.canvas = tkinter.Canvas(self, width=self.cap.get(cv2.CAP_PROP_FRAME_WIDTH),
-                                height=self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        self.canvas.pack()
-        self.update_video()
 
-    def update_video(self):
-        ret, frame = self.cap.read()
+        # Open the video file with OpenCV
+        self.vid = cv2.VideoCapture(video_path)
+        self.total_frames = int(self.vid.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.fps = int(self.vid.get(cv2.CAP_PROP_FPS))
+
+        self.canvas = tkinter.Canvas(self,
+                                width=self.vid.get(cv2.CAP_PROP_FRAME_WIDTH),
+                                height=self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.canvas.grid(row=0, column=0, columnspan=4, padx=10, pady=10)
+
+        # Elapsed time label
+        self.elapsed_time_var = tkinter.StringVar()
+        self.elapsed_time_label = tkinter.Label(self, textvariable=self.elapsed_time_var, bg='#e6e6e6')
+        self.elapsed_time_label.grid(row=1, column=0, columnspan=4, padx=10)
+
+        # Elegant Seek bar
+        self.seek_bar = tkinter.Scale(self, from_=0, to=self.total_frames, orient=tkinter.HORIZONTAL,
+                                 sliderrelief='flat', bg='#c4c4c4', troughcolor='#d9d9d9', bd=0, highlightthickness=0)
+        self.seek_bar.grid(row=2, column=0, columnspan=4, sticky='ew', padx=10)
+        self.seek_bar.bind("<B1-Motion>", self.seek_video)
+
+        # Elegant Control buttons with symbols
+        self.btn_play = tkinter.Button(self, text="▶", command=self.play_video, relief='flat', bg='#e6e6e6', padx=20, pady=5)
+        self.btn_play.grid(row=3, column=0, padx=10, pady=10)
+
+        self.btn_pause = tkinter.Button(self, text="⏸", command=self.pause_video, relief='flat', bg='#e6e6e6', padx=20,
+                                   pady=5)
+        self.btn_pause.grid(row=3, column=1, padx=10, pady=10)
+
+        self.btn_stop = tkinter.Button(self, text="⏹", command=self.stop_video, relief='flat', bg='#e6e6e6', padx=20, pady=5)
+        self.btn_stop.grid(row=3, column=2, padx=10, pady=10)
+
+        self.playing = True
+
+        # Create an update method to refresh video frames
+        self.update()
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+    def play_video(self):
+        if not self.playing:
+            self.playing = True
+            self.update()
+
+    def pause_video(self):
+        self.playing = False
+
+    def stop_video(self):
+        self.vid.set(cv2.CAP_PROP_POS_FRAMES, 0)  # rewind to start
+        self.playing = False
+        self.seek_bar.set(0)  # reset seek bar
+        self.canvas.delete("all")
+
+    def seek_video(self, event):
+        frame_pos = self.seek_bar.get()
+        self.vid.set(cv2.CAP_PROP_POS_FRAMES, frame_pos)
+        self.update_elapsed_time()
+        self.update_frame()
+
+    def update_elapsed_time(self):
+        current_frame = self.vid.get(cv2.CAP_PROP_POS_FRAMES)
+        elapsed_time = int(current_frame / self.fps)
+        self.elapsed_time_var.set(f"Elapsed Time: {elapsed_time} seconds")
+
+    def update_frame(self):
+        ret, frame = self.vid.read()
         if ret:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            photo = ImageTk.PhotoImage(image=Image.fromarray(frame))
-            self.canvas.create_image(0, 0, image=photo, anchor=tkinter.NW)
-            self.after(30, self.update_video)
+            self.photo = ImageTk.PhotoImage(image=Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
+            self.canvas.create_image(0, 0, image=self.photo, anchor=tkinter.NW)
+
+    def update(self):
+        if self.playing:
+            ret, frame = self.vid.read()
+            if ret:
+                self.photo = ImageTk.PhotoImage(image=Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
+                self.canvas.create_image(0, 0, image=self.photo, anchor=tkinter.NW)
+                self.seek_bar.set(self.vid.get(cv2.CAP_PROP_POS_FRAMES))
+                self.update_elapsed_time()
+                self.after(10, self.update)
+
+    def on_closing(self):
+        self.vid.release()
+        self.destroy()
+
+
+# The updated class with an elegant appearance and elapsed time display is ready for integration into the main.py file.
 
 if __name__ == "__main__":
     app = App()
