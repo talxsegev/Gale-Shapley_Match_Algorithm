@@ -10,10 +10,6 @@ import webbrowser
 from PIL import Image, ImageTk
 import cv2
 
-
-
-
-
 customtkinter.set_appearance_mode("Light")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
@@ -23,7 +19,8 @@ class App(customtkinter.CTk):
         super().__init__()
         # configure copyright
         # Create the Copyright label
-        copyright_label = customtkinter.CTkLabel(self,text="Copyright © Tal Segev, Ofek Rabotnicoff, Barel Cohen, Rachel Kopel, Tal Shemesh")
+        copyright_label = customtkinter.CTkLabel(self,
+                                                 text="Copyright © Tal Segev, Ofek Rabotnicoff, Barel Cohen, Rachel Kopel, Tal Shemesh")
 
         # Create the Contact Us link
         contact_us_label = customtkinter.CTkLabel(self, text="Contact Us", text_color=("blue", "blue"), cursor="hand2")
@@ -31,16 +28,16 @@ class App(customtkinter.CTk):
 
         # Place the Copyright label and the Contact Us link in the grid
         copyright_label.grid(row=4, column=0, columnspan=4, pady=(10, 0))
-        contact_us_label.grid(row=5, column=0, columnspan=4,pady = (0,10))
+        contact_us_label.grid(row=5, column=0, columnspan=4, pady=(0, 10))
         # configure window
         self.title("Matching Application")
         self.geometry(f"{1100}x{580}")
 
-        #icon
+        # icon
         self.iconbitmap('CollegeLogo.ico')
 
         self.logo_image = tkinter.PhotoImage(file='CollegeLogo.png')
-        self.logo_label = tkinter.Label(self, image=self.logo_image, bg="white", compound="right" ,fg="white")
+        self.logo_label = tkinter.Label(self, image=self.logo_image, bg="white", compound="right", fg="white")
         self.logo_label.grid(row=0, column=2, sticky='ne')  # 'ne' means top-right (north-east)
         # Initial resize
         self.resize_logo()
@@ -56,12 +53,16 @@ class App(customtkinter.CTk):
         self.sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
         self.sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
         self.sidebar_frame.grid_rowconfigure(4, weight=1)
-        self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="Menu", font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="Menu",
+                                                 font=customtkinter.CTkFont(size=20, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
-        self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, text="Upload Organizations rating",width=30, command=lambda: self.sidebar_button_event('companies'))
+        self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, text="Upload Organizations rating",
+                                                        width=30,
+                                                        command=lambda: self.sidebar_button_event('companies'))
         self.sidebar_button_1.grid(row=1, column=0, padx=20, pady=10, sticky="ew")
 
-        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, text="Upload student rating",width=30, command=lambda: self.sidebar_button_event('students'))
+        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, text="Upload student rating", width=30,
+                                                        command=lambda: self.sidebar_button_event('students'))
         self.sidebar_button_2.grid(row=2, column=0, padx=20, pady=10, sticky="ew")
 
         # Set a common size for the buttons using the uniform option
@@ -73,7 +74,8 @@ class App(customtkinter.CTk):
         self.appearance_mode_optionemenu.grid(row=6, column=0, padx=20, pady=(10, 10))
         self.scaling_label = customtkinter.CTkLabel(self.sidebar_frame, text="UI Scaling:", anchor="w")
         self.scaling_label.grid(row=7, column=0, padx=20, pady=(10, 0))
-        self.scaling_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["80%", "90%", "100%", "110%", "120%"],
+        self.scaling_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame,
+                                                               values=["80%", "90%", "100%", "110%", "120%"],
                                                                command=self.change_scaling_event)
         self.scaling_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 20))
 
@@ -81,25 +83,29 @@ class App(customtkinter.CTk):
         self.entry = customtkinter.CTkEntry(self, placeholder_text="Enter your email")
         self.entry.grid(row=3, column=1, columnspan=2, padx=(20, 0), pady=(20, 20), sticky="nsew")
 
-        self.main_button_1 = customtkinter.CTkButton(master=self, text="Send Result by Email", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"), command=self.send_results_by_email)
+        self.main_button_1 = customtkinter.CTkButton(master=self, text="Send Result by Email", fg_color="transparent",
+                                                     border_width=2, text_color=("gray10", "#DCE4EE"),
+                                                     command=self.send_results_by_email)
         self.main_button_1.grid(row=3, column=3, padx=(20, 20), pady=(20, 20), sticky="nsew")
 
-        instruction_button = customtkinter.CTkButton(self, text="Instructions", fg_color="transparent", border_width=2,text_color=("gray10", "#DCE4EE"), width=30,command= self.open_video_window)
+        instruction_button = customtkinter.CTkButton(self, text="Instructions", fg_color="transparent", border_width=2,
+                                                     text_color=("gray10", "#DCE4EE"), width=30,
+                                                     command=self.open_video_window)
         instruction_button.grid(row=1, column=0, pady=20, padx=20)
 
         # create textbox
         self.textbox = customtkinter.CTkTextbox(self, width=250)
-        self.textbox.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
-
+        self.textbox.grid(row=1, column=1, padx=(20, 20), pady=(20, 20), sticky="nsew")
 
         # create slider and progressbar frame
         self.slider_progressbar_frame = customtkinter.CTkFrame(self, fg_color="transparent")
-        self.slider_progressbar_frame.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.slider_progressbar_frame.grid(row=2, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
         self.slider_progressbar_frame.grid_columnconfigure(0, weight=1)
         self.slider_progressbar_frame.grid_rowconfigure(4, weight=1)
 
-        self.calc_button = customtkinter.CTkButton(self.slider_progressbar_frame, text="Calculate Matching", width=30, command=self.start_progressbar)
-        self.calc_button.grid(row=0, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+        self.calc_button = customtkinter.CTkButton(self.slider_progressbar_frame, text="Calculate Matching", width=30,
+                                                   command=self.start_progressbar)
+        self.calc_button.grid(row=2, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
 
         self.progressbar_1 = customtkinter.CTkProgressBar(self.slider_progressbar_frame)
         self.progressbar_1.grid(row=1, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
@@ -122,8 +128,6 @@ class App(customtkinter.CTk):
 
         self.geometry("400x400")
         self.title("Main App")
-
-
 
     def start_progressbar(self):
         self.progressbar_1.configure(mode="indeterminate")
@@ -187,7 +191,8 @@ class App(customtkinter.CTk):
 
             self.textbox.insert("end", "Running Gale-Shapley algorithm...\n")
             matchings = self.gale_shapley(student_prefs_dict, company_prefs_dict)
-            unmatched_students, unmatched_companies = self.identify_unmatched(matchings, student_prefs_dict,company_prefs_dict)
+            unmatched_students, unmatched_companies = self.identify_unmatched(matchings, student_prefs_dict,
+                                                                              company_prefs_dict)
             self.unmatched_students = unmatched_students
             self.unmatched_companies = unmatched_companies
             self.textbox.insert("end", "Matchings computed. Displaying results...\n")
@@ -197,7 +202,8 @@ class App(customtkinter.CTk):
             self.result = success_rates
             self.textbox.insert("end", "\nSuccess Rates:\n")
             for company, data in success_rates.items():
-                self.textbox.insert("end",f"{company} matched with {data['student']} has a success rate of {data['success_rate']:.2f}%\n")
+                self.textbox.insert("end",
+                                    f"{company} matched with {data['student']} has a success rate of {data['success_rate']:.2f}%\n")
 
             # Display unmatched students and companies
             if unmatched_students:
@@ -224,7 +230,7 @@ class App(customtkinter.CTk):
             # Average the ranks
             average_rank = (student_rank_for_company + company_rank_for_student) / 2
             # Derive success rate as the inverse of the average rank
-            success_rate =round((1 / average_rank)*100, 2)
+            success_rate = round((1 / average_rank) * 100, 2)
             success_rates[company] = {
                 "student": student,
                 "success_rate": success_rate
@@ -338,7 +344,6 @@ class App(customtkinter.CTk):
             self.textbox.see("end")
             return
 
-
         body = text_content
 
         # Construct the mailto URL
@@ -361,7 +366,7 @@ class App(customtkinter.CTk):
     def resize_logo(self, event=None):
         # Adjust the logo label's width and height properties based on window size
         new_width = self.winfo_width() // 10  # For example, 10% of window width
-        new_height = self.winfo_height() // 10 # For example, 10% of window height
+        new_height = self.winfo_height() // 10  # For example, 10% of window height
 
         self.logo_label.configure(width=new_width, height=new_height)
 
@@ -379,9 +384,8 @@ class VideoWindow(tkinter.Toplevel):
         self.total_frames = int(self.vid.get(cv2.CAP_PROP_FRAME_COUNT))
         self.fps = int(self.vid.get(cv2.CAP_PROP_FPS))
 
-        self.canvas = tkinter.Canvas(self,
-                                width=self.vid.get(cv2.CAP_PROP_FRAME_WIDTH),
-                                height=self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.canvas = tkinter.Canvas(self, width=self.vid.get(cv2.CAP_PROP_FRAME_WIDTH),
+                                     height=self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.canvas.grid(row=0, column=0, columnspan=4, padx=10, pady=10)
 
         # Elapsed time label
@@ -391,19 +395,22 @@ class VideoWindow(tkinter.Toplevel):
 
         # Elegant Seek bar
         self.seek_bar = tkinter.Scale(self, from_=0, to=self.total_frames, orient=tkinter.HORIZONTAL,
-                                 sliderrelief='flat', bg='#c4c4c4', troughcolor='#d9d9d9', bd=0, highlightthickness=0)
+                                      sliderrelief='flat', bg='#c4c4c4', troughcolor='#d9d9d9', bd=0,
+                                      highlightthickness=0)
         self.seek_bar.grid(row=2, column=0, columnspan=4, sticky='ew', padx=10)
         self.seek_bar.bind("<B1-Motion>", self.seek_video)
         self.seek_bar.bind("<ButtonRelease-1>", lambda x: setattr(self, "seek_free", True))
         # Elegant Control buttons with symbols
-        self.btn_play = tkinter.Button(self, text="▶", command=self.play_video, relief='flat', bg='#e6e6e6', padx=20, pady=5)
+        self.btn_play = tkinter.Button(self, text="▶", command=self.play_video, relief='flat', bg='#e6e6e6', padx=20,
+                                       pady=5)
         self.btn_play.grid(row=3, column=0, padx=10, pady=10)
 
         self.btn_pause = tkinter.Button(self, text="⏸", command=self.pause_video, relief='flat', bg='#e6e6e6', padx=20,
-                                   pady=5)
+                                        pady=5)
         self.btn_pause.grid(row=3, column=1, padx=10, pady=10)
 
-        self.btn_stop = tkinter.Button(self, text="⏹", command=self.stop_video, relief='flat', bg='#e6e6e6', padx=20, pady=5)
+        self.btn_stop = tkinter.Button(self, text="⏹", command=self.stop_video, relief='flat', bg='#e6e6e6', padx=20,
+                                       pady=5)
         self.btn_stop.grid(row=3, column=2, padx=10, pady=10)
 
         self.playing = True
@@ -433,7 +440,6 @@ class VideoWindow(tkinter.Toplevel):
         self.vid.set(cv2.CAP_PROP_POS_FRAMES, frame_pos)
         self.update_elapsed_time()
         self.update_frame()
-
 
     def update_elapsed_time(self):
         current_frame = self.vid.get(cv2.CAP_PROP_POS_FRAMES)
