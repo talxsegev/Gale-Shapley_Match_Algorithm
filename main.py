@@ -1,16 +1,13 @@
 import tkinter
 import tkinter.messagebox
 import customtkinter
-import time
 import pandas as pd
 from tkinter import filedialog
 import smtplib
 from email.mime.text import MIMEText
 from validate_email import validate_email
 import webbrowser
-import urllib.parse
 from PIL import Image, ImageTk
-from threading import Thread
 import cv2
 
 
@@ -87,7 +84,8 @@ class App(customtkinter.CTk):
         self.main_button_1 = customtkinter.CTkButton(master=self, text="Send Result by Email", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"), command=self.send_results_by_email)
         self.main_button_1.grid(row=3, column=3, padx=(20, 20), pady=(20, 20), sticky="nsew")
 
-
+        instruction_button = customtkinter.CTkButton(self, text="Instructions", fg_color="transparent", border_width=2,text_color=("gray10", "#DCE4EE"), width=30,command= self.open_video_window)
+        instruction_button.grid(row=1, column=0, pady=20, padx=20)
 
         # create textbox
         self.textbox = customtkinter.CTkTextbox(self, width=250)
@@ -125,8 +123,7 @@ class App(customtkinter.CTk):
         self.geometry("400x400")
         self.title("Main App")
 
-        instruction_button = customtkinter.CTkButton(self, text="Instructions", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"),command=self.open_video_window)
-        instruction_button.grid(row=2, column=1, pady=20)
+
 
     def start_progressbar(self):
         self.progressbar_1.configure(mode="indeterminate")
@@ -217,6 +214,23 @@ class App(customtkinter.CTk):
         except Exception as e:
             self.textbox.insert("end", f"Error: {str(e)}")
         self.textbox.see("end")
+
+    def calculate_success_rate(self, matchings, student_prefs, company_prefs):
+        success_rates = {}
+        for company, student in matchings.items():
+            # Fetch the ranks from the preference lists
+            student_rank_for_company = student_prefs[student].index(company) + 1
+            company_rank_for_student = company_prefs[company].index(student) + 1
+            # Average the ranks
+            average_rank = (student_rank_for_company + company_rank_for_student) / 2
+            # Derive success rate as the inverse of the average rank
+            success_rate =round((1 / average_rank)*100, 2)
+            success_rates[company] = {
+                "student": student,
+                "success_rate": success_rate
+            }
+        return success_rates
+
     def gale_shapley(self, students_pref, companies_pref):
         """Gale-Shapley algorithm for stable matching."""
         # Initialize
@@ -255,21 +269,6 @@ class App(customtkinter.CTk):
         unmatched_companies = [company for company in companies_pref if company not in matched_pairs]
 
         return unmatched_students, unmatched_companies
-    def calculate_success_rate(self, matchings, student_prefs, company_prefs):
-        success_rates = {}
-        for company, student in matchings.items():
-            # Fetch the ranks from the preference lists
-            student_rank_for_company = student_prefs[student].index(company) + 1
-            company_rank_for_student = company_prefs[company].index(student) + 1
-            # Average the ranks
-            average_rank = (student_rank_for_company + company_rank_for_student) / 2
-            # Derive success rate as the inverse of the average rank
-            success_rate =round((1 / average_rank)*100, 2)
-            success_rates[company] = {
-                "student": student,
-                "success_rate": success_rate
-            }
-        return success_rates
 
     def send_results_by_email(self):
         recipient = self.entry.get()
@@ -315,30 +314,6 @@ class App(customtkinter.CTk):
             else:
                 self.textbox.insert("end", f"Error sending email: {str(e)}\n")
 
-    def open_default_email_app(self):
-        recipient = self.entry.get()
-        subject = "Matching Results"
-
-        # Construct the text representation from self.result
-        text_content = ""
-        for org_name, data in self.result.items():
-            text_content += f"Organization: {org_name}%0D%0A"
-            text_content += f"Matched Student: {data['student']}%0D%0A"
-            text_content += f"Success Rate: {data['success_rate']}%%0D%0A"
-            text_content += "-" * 40 + "%0D%0A"  # Separator line
-
-        if self.unmatched_students:
-            text_content += str("Unmatched Students:%0D%0A" + str(self.unmatched_students))
-        if self.unmatched_companies:
-            text_content += str("Unmatched Companies:%0D%0A" + str(self.unmatched_companies))
-
-        body = text_content
-
-        # Construct the mailto URL
-        mailto_url = f"mailto:{recipient}?subject={subject}&body={body}"
-
-        # Open the default email application
-        webbrowser.open(mailto_url)
     def open_default_email_app(self):
         recipient = self.entry.get()
         subject = "Matching Results"
