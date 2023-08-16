@@ -33,17 +33,6 @@ class App(customtkinter.CTk):
         self.title("Matching Application")
         self.geometry(f"{1100}x{580}")
 
-        # icon
-        self.iconbitmap('CollegeLogo.ico')
-
-        self.logo_image = tkinter.PhotoImage(file='CollegeLogo.png')
-        self.logo_label = tkinter.Label(self, image=self.logo_image, bg="white", compound="right", fg="white")
-        self.logo_label.grid(row=0, column=2, sticky='ne')  # 'ne' means top-right (north-east)
-        # Initial resize
-        self.resize_logo()
-        # Bind the window resize event
-        self.bind('<Configure>', self.resize_logo)
-
         # configure grid layout (4x4)
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure((2, 3), weight=0)
