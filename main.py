@@ -116,7 +116,8 @@ class App(customtkinter.CTk):
         self.unmatched_companies = []
 
         self.geometry("400x400")
-        self.title("Main App")
+        self.title("Matching Application")
+
 
     def start_progressbar(self):
         self.progressbar_1.configure(mode="indeterminate")
@@ -362,6 +363,7 @@ class App(customtkinter.CTk):
     def open_video_window(self):
         video_win = VideoWindow('vid.mp4')
         video_win.title("Instruction Video")
+
 
 
 class VideoWindow(tkinter.Toplevel):
