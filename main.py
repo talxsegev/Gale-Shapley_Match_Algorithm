@@ -84,7 +84,7 @@ class App(customtkinter.CTk):
 
         # create textbox
         self.textbox = customtkinter.CTkTextbox(self, width=250)
-        self.textbox.grid(row=1, column=1, padx=(20, 20), pady=(20, 20), sticky="nsew")
+        self.textbox.grid(row=0, column=1,columnspan=3,rowspan=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
 
         # create slider and progressbar frame
         self.slider_progressbar_frame = customtkinter.CTkFrame(self, fg_color="transparent")
