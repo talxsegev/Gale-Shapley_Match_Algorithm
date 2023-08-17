@@ -31,8 +31,7 @@ class App(customtkinter.CTk):
         contact_us_label.grid(row=5, column=0, columnspan=4, pady=(0, 10))
         # configure window
         self.title("Matching Application")
-        self.geometry(f"{1100}x{580}")
-
+        self.geometry(f"{int(self.winfo_screenwidth() / 2)}x{int(self.winfo_screenheight() / 2)}")
         # configure grid layout (4x4)
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure((2, 3), weight=0)
@@ -77,10 +76,10 @@ class App(customtkinter.CTk):
                                                      command=self.send_results_by_email)
         self.main_button_1.grid(row=3, column=3, padx=(20, 20), pady=(20, 20), sticky="nsew")
 
-        instruction_button = customtkinter.CTkButton(self, text="Instructions", fg_color="transparent", border_width=2,
-                                                     text_color=("gray10", "#DCE4EE"), width=30,
+        self.instruction_button = customtkinter.CTkButton(self.sidebar_frame, text="Instructions", fg_color="transparent", border_width=2,
+                                                     text_color=("gray10", "#DCE4EE"),
                                                      command=self.open_video_window)
-        instruction_button.grid(row=1, column=0, pady=20, padx=20)
+        self.instruction_button.grid(row=3, column=0, pady=(20, 20), padx=(20, 20), sticky="ew")
 
         # create textbox
         self.textbox = customtkinter.CTkTextbox(self, width=250)
@@ -115,7 +114,7 @@ class App(customtkinter.CTk):
         self.unmatched_students = []
         self.unmatched_companies = []
 
-        self.geometry("400x400")
+
         self.title("Matching Application")
 
 
@@ -123,7 +122,7 @@ class App(customtkinter.CTk):
         self.progressbar_1.configure(mode="indeterminate")
         self.progressbar_1.start()
         self.calculate_matching()  # Start the matching process
-        self.after(5000, self.stop_progressbar)  # After 5000 milliseconds (5 seconds), stop the progress bar
+        self.after(2000, self.stop_progressbar)  # After 5000 milliseconds (5 seconds), stop the progress bar
 
     def stop_progressbar(self):
         self.progressbar_1.stop()
@@ -290,7 +289,7 @@ class App(customtkinter.CTk):
         body = text_content
 
         # Email setup
-        sender_email = "matchingappgaleshapley@gmail.com"
+        sender_email = "matching_app_gale-shapley@gmail.com"
         sender_password = "gkbpsrptpvdgyecg"
 
         msg = MIMEText(body)
