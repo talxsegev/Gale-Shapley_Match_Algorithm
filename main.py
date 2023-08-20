@@ -287,6 +287,7 @@ class App(customtkinter.CTk):
 
         if not validate_email(recipient):
             self.textbox.insert("end", f"\n'{recipient}' is not a valid email address.\n")
+            self.textbox.see("end")
             return
 
         body = text_content
@@ -305,13 +306,15 @@ class App(customtkinter.CTk):
                 server.login(sender_email, sender_password)
                 server.sendmail(sender_email, recipient, msg.as_string())
             self.textbox.insert("end", "Email sent successfully.\n")
+            self.textbox.see("end")
         except Exception as e:
             if "not a valid email address" in str(e):
                 self.open_default_email_app()
                 self.textbox.insert("end", "Invalid email address. Opened default email app.\n")
+                self.textbox.see("end")
             else:
                 self.textbox.insert("end", f"Error sending email: {str(e)}\n")
-
+                self.textbox.see("end")
     def open_default_email_app(self):
         recipient = self.entry.get()
         subject = "Matching Results"
@@ -354,13 +357,6 @@ class App(customtkinter.CTk):
 
         # Open the default email application
         webbrowser.open(mailto_url)
-
-    def resize_logo(self, event=None):
-        # Adjust the logo label's width and height properties based on window size
-        new_width = self.winfo_width() // 10  # For example, 10% of window width
-        new_height = self.winfo_height() // 10  # For example, 10% of window height
-
-        self.logo_label.configure(width=new_width, height=new_height)
 
     def open_video_window(self):
         video_win = VideoWindow(fr'{Path(__file__).parent}\vid.mp4')
