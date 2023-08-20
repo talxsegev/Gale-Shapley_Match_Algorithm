@@ -1,5 +1,7 @@
 import tkinter
 import tkinter.messagebox
+from pathlib import Path
+
 import customtkinter
 import pandas as pd
 from tkinter import filedialog
@@ -9,6 +11,7 @@ from validate_email import validate_email
 import webbrowser
 from PIL import Image, ImageTk
 import cv2
+print(Path(__file__).parent)
 
 customtkinter.set_appearance_mode("Light")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -289,7 +292,7 @@ class App(customtkinter.CTk):
         body = text_content
 
         # Email setup
-        sender_email = "matching_app_gale-shapley@gmail.com"
+        sender_email = "matchingappgaleshapley@gmail.com"
         sender_password = "gkbpsrptpvdgyecg"
 
         msg = MIMEText(body)
@@ -360,7 +363,7 @@ class App(customtkinter.CTk):
         self.logo_label.configure(width=new_width, height=new_height)
 
     def open_video_window(self):
-        video_win = VideoWindow('vid.mp4')
+        video_win = VideoWindow(fr'{Path(__file__).parent}\vid.mp4')
         video_win.title("Instruction Video")
 
 
