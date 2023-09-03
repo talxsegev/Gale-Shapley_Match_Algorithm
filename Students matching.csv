@@ -1,5 +1,6 @@
-TIMESTAMP,Rating [Organization 1],Rating [Organization 2],Rating [Organization 3],Rating [Organization 4],Rating [Organization 5],Rating [Organization 6],Full name
-10/08/2023 17:28,1,2,3,4,5,5,OFEK RABO
-10/08/2023 17:28,1,2,3,4,5,5,TAL SEGEV
-10/08/2023 17:29,2,3,4,5,1,1,Rachel koopel
-10/08/2023 17:29,5,3,4,2,1,1,barel cohen
+TIMESTAMP,Rating [Organization 1],Rating [Organization 2],Rating [Organization 3],Rating [Organization 4],Rating [Organization 5],Rating [Organization 6],Rating [Organization 7],Full name
+10/08/2023 17:28,1,2,3,5,4,7,6,OFEK RABO
+10/08/2023 17:28,1,2,3,4,5,6,7,TAL SEGEV
+10/08/2023 17:29,2,3,4,7,1,5,6,Rachel koopel
+10/08/2023 17:29,7,6,4,2,1,3,5,barel cohen
+10/08/2023 17:29,7,5,6,2,4,3,1,Tal Shemesh

@@ -215,14 +215,18 @@ class App(customtkinter.CTk):
 
     def calculate_success_rate(self, matchings, student_prefs, company_prefs):
         success_rates = {}
+        print(len(student_prefs))
+        print(len(company_prefs))
         for company, student in matchings.items():
             # Fetch the ranks from the preference lists
-            student_rank_for_company = student_prefs[student].index(company) + 1
-            company_rank_for_student = company_prefs[company].index(student) + 1
+            student_rank_for_company = student_prefs[student].index(company)
+            company_rank_for_student = company_prefs[company].index(student)
+
             # Average the ranks
-            average_rank = (student_rank_for_company + company_rank_for_student) / 2
+            # average_rank = (student_rank_for_company + company_rank_for_student) / 2
             # Derive success rate as the inverse of the average rank
-            success_rate = round((1 / average_rank) * 100, 2)
+            # success_rate = round((1 / average_rank) * 100, 2)
+            success_rate = round(((((len(student_prefs)-student_rank_for_company)+(len(company_prefs)-company_rank_for_student)) /(len(company_prefs)+len(student_prefs))))*100,2)
             success_rates[company] = {
                 "student": student,
                 "success_rate": success_rate
